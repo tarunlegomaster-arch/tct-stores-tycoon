@@ -29,6 +29,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const queueLane = document.getElementById('queue-lane');
     const logText = document.getElementById('log-text');
     const warehouseBtn = document.getElementById('warehouse-btn');
+    const receiptScroll = document.getElementById('receipt-scroll');
     
     const employeeBtn = document.getElementById('btn-choose-employee');
     const customerBtn = document.getElementById('btn-choose-customer');
@@ -54,6 +55,7 @@ document.addEventListener("DOMContentLoaded", () => {
         roleOverlay.style.display = "none";
         roleBadge.textContent = role;
         roleBadge.className = `badge ${role}`;
+        receiptScroll.classList.add('hidden');
 
         if (role === 'employee') {
             playerMoney = 0; 
@@ -62,7 +64,7 @@ document.addEventListener("DOMContentLoaded", () => {
             logText.textContent = "▶️ Signed in as an Employee. Keep front aisles supplied by unloading backroom storage shelves!";
             setInterval(spawnCustomerForEmployee, 4000);
         } else {
-            playerMoney = 150; // Give the customer a bit more starting money for high-end items
+            playerMoney = 150; 
             warehouseBtn.textContent = "🔒 Backroom Shelves Locked";
             screenStatus.textContent = "CLOSED";
             logText.textContent = "▶️ Customer shopping session active. Browse the 12 Walmart aisles to find items!";
@@ -84,6 +86,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
             
+            // Hide previous receipt if they start shopping again
+            receiptScroll.classList.add('hidden');
+
             const itemSelected = aisleItems[aisleNumber];
             customerBasket.push(itemSelected);
             transactionTotal += itemSelected.price;
@@ -138,22 +143,76 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         
         if (progressStage === 'paying') {
-            if (playerMoney < transactionTotal) {
-                logText.textContent = `▶️ Transaction Declined! Your total ($${transactionTotal}) exceeds your wallet balance. Refresh to retry.`;
+            const taxAmount = parseFloat((transactionTotal * 0.13).toFixed(2));
+            const finalGrandTotal = parseFloat((transactionTotal + taxAmount).toFixed(2));
+
+            if (playerMoney < finalGrandTotal) {
+                logText.textContent = `▶️ Transaction Declined! Your total with tax ($${finalGrandTotal}) exceeds your wallet balance.`;
                 return;
             }
             
-            playerMoney -= transactionTotal;
+            playerMoney -= finalGrandTotal;
             pinLed.textContent = "APPROVED";
             screenStatus.textContent = "PAID";
-            logText.textContent = `▶️ Payment processed! You successfully purchased ${customerBasket.length} Walmart items for the long weekend!`;
+            logText.textContent = `▶️ Payment processed! Your receipt tape has been printed below.`;
             progressStage = "done";
             
+            // Build and render the tape scroll markup parameters
+            printWalmartReceipt(taxAmount, finalGrandTotal);
+
             window.confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+            
+            // Reset for next trip
             customerBasket = [];
             transactionTotal = 0;
+            progressStage = "shopping"; 
             updateUI();
         }
+    }
+
+    function printWalmartReceipt(tax, grandTotal) {
+        let itemsHtml = "";
+        customerBasket.forEach(item => {
+            itemsHtml += `
+                <div class="receipt-item-row">
+                    <span>${item.name}</span>
+                    <span>$${item.price.toFixed(2)}</span>
+                </div>
+            `;
+        });
+
+        const currentDateTime = new Date().toLocaleString("en-US");
+
+        receiptScroll.innerHTML = `
+            <div class="receipt-header">
+                <h3>TCT WALMART SUPERCENTER</h3>
+                <p>Store #4510 - Long Weekend Hub</p>
+                <p>${currentDateTime}</p>
+            </div>
+            <div class="receipt-items-box">
+                ${itemsHtml}
+            </div>
+            <div class="receipt-divider"></div>
+            <div class="receipt-summary-row">
+                <span>SUBTOTAL</span>
+                <span>$${transactionTotal.toFixed(2)}</span>
+            </div>
+            <div class="receipt-summary-row">
+                <span>HST TAX (13%)</span>
+                <span>$${tax.toFixed(2)}</span>
+            </div>
+            <div class="receipt-summary-row grand-total">
+                <span>GRAND TOTAL</span>
+                <span>$${grandTotal.toFixed(2)}</span>
+            </div>
+            <div class="receipt-divider"></div>
+            <div class="receipt-footer">
+                <p>ITEMS PURCHASED: ${customerBasket.length}</p>
+                <p>THANK YOU FOR SHOPPING AT TCT!</p>
+                <p>❤️ Happy Long Weekend Mom & Dad! ❤️</p>
+            </div>
+        `;
+        receiptScroll.classList.remove('hidden');
     }
 
     function spawnCustomerForEmployee() {
@@ -182,30 +241,4 @@ document.addEventListener("DOMContentLoaded", () => {
         if (currentRole !== 'employee') return;
         
         if (playerMoney < 20) {
-            logText.textContent = "▶️ Order failed! You need $20 in register wages to unlock new supply boxes.";
-            return;
-        }
-        
-        playerMoney -= 20;
-        storeStock = maxStock;
-        logText.textContent = "▶️ Backroom storage shelves reloaded. Front aisles supplied.";
-        updateUI();
-    }
-
-    function updateCustomerView() {
-        queueLane.innerHTML = `
-            <div class="queue-token" style="background:#6366f1">🎒 Items in Cart: <strong id="basket-count" style="margin-left:5px">0</strong></div>
-        `;
-    }
-
-    function updateUI() {
-        cashVal.textContent = `$${playerMoney}`;
-        stockVal.textContent = `${storeStock}/${maxStock}`;
-        if (currentRole === 'customer') {
-            const basketCount = document.getElementById('basket-count');
-            if (basketCount) basketCount.textContent = customerBasket.length;
-        }
-    }
-
-    updateUI();
-});
+Use code with caution.logText.textContent = "▶️ Order failed! You need $20 in register wages to unlock new supply boxes.";return;}playerMoney -= 20;storeStock = maxStock;logText.textContent = "▶️ Backroom storage shelves reloaded. Front aisles supplied.";updateUI();}function updateCustomerView() {queueLane.innerHTML = <div class="queue-token" style="background:#6366f1">🎒 Items in Cart: <strong id="basket-count" style="margin-left:5px">0</strong></div>;}function updateUI() {cashVal.textContent = $${playerMoney.toFixed(2)};stockVal.textContent = ${storeStock}/${maxStock};if (currentRole === 'customer') {const basketCount = document.getElementById('basket-count');if (basketCount) basketCount.textContent = customerBasket.length;}}updateUI();});

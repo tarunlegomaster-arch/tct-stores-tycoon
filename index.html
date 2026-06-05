@@ -25,7 +25,7 @@
 
         <!-- MAIN GAME HUD -->
         <header class="game-hud">
-            <div class="brand-title">🏪 TCT STORE <span id="role-badge" class="badge">---</span></div>
+            <div class="brand-title">🏪 TCT WALMART <span id="role-badge" class="badge">---</span></div>
             <div class="stats-group">
                 <div class="stat-pill">💰 Money: <span id="cash-val">$100</span></div>
                 <div class="stat-pill">📦 Storage Stock: <span id="stock-val">50/50</span></div>
@@ -76,6 +76,11 @@
 
                 <!-- TRAFFIC QUEUE AREA -->
                 <div class="customer-queue-lane" id="queue-lane"></div>
+
+                <!-- NEW: WALMART PRINTED RECEIPT COMPONENT -->
+                <div id="receipt-scroll" class="receipt-scroll hidden">
+                    <!-- Injected dynamically via JS when transaction clears -->
+                </div>
             </div>
         </main>
 
