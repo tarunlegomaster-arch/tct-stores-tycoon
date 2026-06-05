@@ -44,15 +44,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (role === 'employee') {
             playerMoney = 0; 
-            warehouseBtn.textContent = "📦 Order Inventory Delivery (-$20)";
+            warehouseBtn.textContent = "📦 Restock Backroom Shelves (-$20)";
             screenStatus.textContent = "WAITING";
-            logText.textContent = "▶️ Signed in as an Employee. Customers will arrive shortly. Keep shelves loaded!";
+            logText.textContent = "▶️ Signed in as an Employee. Keep front aisles supplied by unloading backroom storage shelves!";
             setInterval(spawnCustomerForEmployee, 4000);
         } else {
             playerMoney = 100; 
-            warehouseBtn.textContent = "🔒 Storage Locked (Staff Only)";
+            warehouseBtn.textContent = "🔒 Backroom Shelves Locked";
             screenStatus.textContent = "CLOSED";
-            logText.textContent = "▶️ Swiped Customer Card. Click on the 12 aisle shelves to add items into your basket!";
+            logText.textContent = "▶️ Customer shopping session active. Browse the 12 main floor shopping aisles!";
             updateCustomerView();
         }
         updateUI();
@@ -63,34 +63,34 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (currentRole === 'customer') {
             if (progressStage !== 'shopping') {
-                logText.textContent = "▶️ You have already finished picking items! Head to the checkout counter area.";
+                logText.textContent = "▶️ Basket finalized. Proceed to the front desktop register.";
                 return;
             }
             if (storeStock <= 0) {
-                logText.textContent = "▶️ Out of stock! The store shelves are empty. Wait for staff to refill them.";
+                logText.textContent = "▶️ Floor Aisle empty! Wait for an employee to bring items from backroom storage.";
                 return;
             }
             
             itemsInCart++;
             storeStock--;
-            logText.textContent = `▶️ Placed item from Shelves into basket. Cart: ${itemsInCart} items. Click register to check out when ready!`;
+            logText.textContent = `▶️ Collected item from Aisle Sector ${aisleNumber}. Basket: ${itemsInCart} items.`;
             screenStatus.textContent = "TAP TO GO";
             updateUI();
         } else {
-            logText.textContent = `▶️ Checked Aisle Section ${aisleNumber}. Stock level: ${storeStock}/${maxStock}.`;
+            logText.textContent = `▶️ Employee Stock Audit: Floor Aisle Sector ${aisleNumber} checked. Available stock: ${storeStock}/${maxStock}.`;
         }
     }
 
     function interactRegister() {
         if (currentRole === 'employee') {
             if (employeeQueue.length === 0) {
-                logText.textContent = "▶️ Register terminal clear. No customers waiting to scan items.";
+                logText.textContent = "▶️ Front counter register clear. No customers waiting.";
                 return;
             }
             
             const shopper = employeeQueue.shift();
             playerMoney += 20; 
-            logText.textContent = `▶️ Scanned items for ${shopper}. Register payout logged: +$20 wages.`;
+            logText.textContent = `▶️ Items scanned on HP terminal for ${shopper}. Wages payout: +$20 cash.`;
             window.confetti({ particleCount: 30, spread: 40, origin: { y: 0.8 } });
             
             renderEmployeeQueue();
@@ -103,34 +103,34 @@ document.addEventListener("DOMContentLoaded", () => {
         } else {
             if (progressStage === 'shopping') {
                 if (itemsInCart === 0) {
-                    logText.textContent = "▶️ Your shopping basket is empty! Browse some shelves first.";
+                    logText.textContent = "▶️ Your shopping basket is empty! Fill up in the floor aisles first.";
                     return;
                 }
                 progressStage = "paying";
                 screenStatus.textContent = "TOTAL: $" + (itemsInCart * 10);
                 pinLed.textContent = "INSERT CARD";
-                logText.textContent = `▶️ Cashier scanned your cart total: $${itemsInCart * 10}. Click the orange PIN pad module to pay!`;
+                logText.textContent = `▶️ Aisle checkout completed. Total: $${itemsInCart * 10}. Tap the orange PIN Pad card reader to pay!`;
             }
         }
     }
 
     function interactPinPad() {
         if (currentRole !== 'customer') {
-            logText.textContent = "▶️ Staff operations warning: Only customers can enter payment parameters on the PIN Pad device.";
+            logText.textContent = "▶️ Error: PIN Pad terminal restricted to shopping customers only.";
             return;
         }
         
         if (progressStage === 'paying') {
             const grandTotal = itemsInCart * 10;
             if (playerMoney < grandTotal) {
-                logText.textContent = "▶️ Declined! You don't have enough money inside your wallet to buy these items.";
+                logText.textContent = "▶️ Transaction Declined! Insufficient personal wallet funds.";
                 return;
             }
             
             playerMoney -= grandTotal;
             pinLed.textContent = "APPROVED";
             screenStatus.textContent = "PAID";
-            logText.textContent = `▶️ Transaction approved! You bought your long-weekend items. Refresh page to swap roles!`;
+            logText.textContent = `▶️ Payment processed successfully. Long-weekend shopping complete!`;
             progressStage = "done";
             
             window.confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
@@ -165,19 +165,19 @@ document.addEventListener("DOMContentLoaded", () => {
         if (currentRole !== 'employee') return;
         
         if (playerMoney < 20) {
-            logText.textContent = "▶️ Cannot purchase delivery! You need $20 from wages to buy inventory boxes.";
+            logText.textContent = "▶️ Order failed! You need $20 in register wages to unlock new supply boxes.";
             return;
         }
         
         playerMoney -= 20;
         storeStock = maxStock;
-        logText.textContent = "▶️ Backroom supply unboxed. All 12 shopping aisles refilled back to full capacity.";
+        logText.textContent = "▶️ Backroom storage shelves reloaded. Front aisles supplied.";
         updateUI();
     }
 
     function updateCustomerView() {
         queueLane.innerHTML = `
-            <div class="queue-token" style="background:#6366f1">🎒 Items in Basket: <strong id="basket-count" style="margin-left:5px">0</strong></div>
+            <div class="queue-token" style="background:#6366f1">🎒 Basket Inventory: <strong id="basket-count" style="margin-left:5px">0</strong></div>
         `;
     }
 
