@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TCT STORES Tycoon</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Confetti Graphics Library -->
+    <script src="https://jsdelivr.net"></script>
+</head>
+<body>
+
+    <div class="tycoon-container">
+        <!-- ROLE SELECTION INITIAL OVERLAY -->
+        <div id="role-overlay" class="role-overlay">
+            <div class="role-card">
+                <h2>Select Your Role</h2>
+                <p>Welcome to TCT Stores! Choose how you want to play:</p>
+                <div class="role-buttons">
+                    <button id="btn-choose-employee" class="select-btn employee-choice">💼 Play as Employee</button>
+                    <button id="btn-choose-customer" class="select-btn customer-choice">🛒 Play as Customer</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- MAIN GAME HUD -->
+        <header class="game-hud">
+            <div class="brand-title">🏪 TCT STORES <span id="role-badge" class="badge">---</span></div>
+            <div class="stats-group">
+                <div class="stat-pill">💰 Money: <span id="cash-val">$100</span></div>
+                <div class="stat-pill">📦 Store Stock: <span id="stock-val">50/50</span></div>
+            </div>
+        </header>
+
+        <main class="gameplay-arena">
+            <div class="store-floorplan">
+                
+                <!-- BACKROOM WAREHOUSE -->
+                <div class="warehouse-backroom">
+                    <div class="zone-label">BACKROOM ITEM STORAGE</div>
+                    <button id="warehouse-btn" class="action-btn">Order Inventory Box</button>
+                </div>
+
+                <!-- THE 12 AISLES / SHELVES GRID -->
+                <div class="aisles-grid">
+                    <div class="aisle-lane" data-aisle="1"><div class="shelf-block">Shelves 1/2</div></div>
+                    <div class="aisle-lane" data-aisle="2"><div class="shelf-block">Shelves 3/4</div></div>
+                    <div class="aisle-lane" data-aisle="3"><div class="shelf-block">Shelves 5/6</div></div>
+                    <div class="aisle-lane" data-aisle="4"><div class="shelf-block">Shelves 7/8</div></div>
+                    <div class="aisle-lane" data-aisle="5"><div class="shelf-block">Shelves 9/10</div></div>
+                    <div class="aisle-lane" data-aisle="6"><div class="shelf-block">Aisles 11/12</div></div>
+                </div>
+
+                <!-- FRONT CHECKOUT COUNTER -->
+                <div class="checkout-station">
+                    <div class="tct-counter-desk">
+                        <div class="counter-text">TCT STORES</div>
+                        
+                        <!-- HP Register screen -->
+                        <div class="register-terminal" id="hp-screen">
+                            <div class="terminal-logo">hp</div>
+                            <div class="terminal-status" id="screen-status">CHOOSE ROLE</div>
+                        </div>
+                        
+                        <!-- PIN Pad module -->
+                        <div class="pin-pad-module" id="pin-pad">
+                            <div class="pin-led" id="pin-led">INSERT CARD</div>
+                            <div class="pin-matrix">
+                                <span>.</span><span>.</span><span>.</span>
+                                <span>.</span><span>.</span><span>.</span>
+                                <span>.</span><span>.</span><span>.</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TRAFFIC QUEUE COMPONENT AREA -->
+                <div class="customer-queue-lane" id="queue-lane"></div>
+            </div>
+        </main>
+
+        <footer class="game-log">
+            <span id="log-text">▶️ Waiting for role selection. Select Employee or Customer to play!</span>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
