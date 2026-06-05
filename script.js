@@ -3,9 +3,22 @@ document.addEventListener("DOMContentLoaded", () => {
     let playerMoney = 100;
     let storeStock = 50;
     const maxStock = 50;
-    let itemsInCart = 0;
     let progressStage = "shopping"; 
     let employeeQueue = [];
+
+    // Walmart Item Tracking States
+    let customerBasket = [];
+    let transactionTotal = 0;
+
+    // Walmart Aisle Item Database Mappings
+    const aisleItems = {
+        "1": { name: "Fresh Apples & Bananas", price: 5 },
+        "2": { name: "Premium Cookies & Ice Cream", price: 8 },
+        "3": { name: "Laundry Detergent & Soap", price: 12 },
+        "4": { name: "Lego Tycoon Building Set", price: 25 },
+        "5": { name: "Comfy Long-Weekend Hoodie", price: 30 },
+        "6": { name: "Flat Screen Smart TV", price: 75 }
+    };
 
     const roleOverlay = document.getElementById('role-overlay');
     const roleBadge = document.getElementById('role-badge');
@@ -49,10 +62,10 @@ document.addEventListener("DOMContentLoaded", () => {
             logText.textContent = "▶️ Signed in as an Employee. Keep front aisles supplied by unloading backroom storage shelves!";
             setInterval(spawnCustomerForEmployee, 4000);
         } else {
-            playerMoney = 100; 
+            playerMoney = 150; // Give the customer a bit more starting money for high-end items
             warehouseBtn.textContent = "🔒 Backroom Shelves Locked";
             screenStatus.textContent = "CLOSED";
-            logText.textContent = "▶️ Customer shopping session active. Browse the 12 main floor shopping aisles!";
+            logText.textContent = "▶️ Customer shopping session active. Browse the 12 Walmart aisles to find items!";
             updateCustomerView();
         }
         updateUI();
@@ -67,17 +80,21 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
             if (storeStock <= 0) {
-                logText.textContent = "▶️ Floor Aisle empty! Wait for an employee to bring items from backroom storage.";
+                logText.textContent = "▶️ Floor Aisle empty! Wait for an employee to bring items from backroom storage shelves.";
                 return;
             }
             
-            itemsInCart++;
+            const itemSelected = aisleItems[aisleNumber];
+            customerBasket.push(itemSelected);
+            transactionTotal += itemSelected.price;
             storeStock--;
-            logText.textContent = `▶️ Collected item from Aisle Sector ${aisleNumber}. Basket: ${itemsInCart} items.`;
+            
+            logText.textContent = `▶️ Added [${itemSelected.name}] ($${itemSelected.price}) to cart. Total Items: ${customerBasket.length}.`;
             screenStatus.textContent = "TAP TO GO";
             updateUI();
         } else {
-            logText.textContent = `▶️ Employee Stock Audit: Floor Aisle Sector ${aisleNumber} checked. Available stock: ${storeStock}/${maxStock}.`;
+            const itemSelected = aisleItems[aisleNumber];
+            logText.textContent = `▶️ Employee Stock Audit: Section selling [${itemSelected.name}] checked. Stock: ${storeStock}/${maxStock}.`;
         }
     }
 
@@ -89,8 +106,8 @@ document.addEventListener("DOMContentLoaded", () => {
             }
             
             const shopper = employeeQueue.shift();
-            playerMoney += 20; 
-            logText.textContent = `▶️ Items scanned on HP terminal for ${shopper}. Wages payout: +$20 cash.`;
+            playerMoney += 25; 
+            logText.textContent = `▶️ Scanned custom grocery items on HP terminal for ${shopper}. Wages payout: +$25 cash profit.`;
             window.confetti({ particleCount: 30, spread: 40, origin: { y: 0.8 } });
             
             renderEmployeeQueue();
@@ -102,14 +119,14 @@ document.addEventListener("DOMContentLoaded", () => {
             updateUI();
         } else {
             if (progressStage === 'shopping') {
-                if (itemsInCart === 0) {
+                if (customerBasket.length === 0) {
                     logText.textContent = "▶️ Your shopping basket is empty! Fill up in the floor aisles first.";
                     return;
                 }
                 progressStage = "paying";
-                screenStatus.textContent = "TOTAL: $" + (itemsInCart * 10);
+                screenStatus.textContent = "TOTAL: $" + transactionTotal;
                 pinLed.textContent = "INSERT CARD";
-                logText.textContent = `▶️ Aisle checkout completed. Total: $${itemsInCart * 10}. Tap the orange PIN Pad card reader to pay!`;
+                logText.textContent = `▶️ Checkout complete! Your Walmart total is $${transactionTotal}. Tap the orange PIN Pad card reader to pay!`;
             }
         }
     }
@@ -121,20 +138,20 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         
         if (progressStage === 'paying') {
-            const grandTotal = itemsInCart * 10;
-            if (playerMoney < grandTotal) {
-                logText.textContent = "▶️ Transaction Declined! Insufficient personal wallet funds.";
+            if (playerMoney < transactionTotal) {
+                logText.textContent = `▶️ Transaction Declined! Your total ($${transactionTotal}) exceeds your wallet balance. Refresh to retry.`;
                 return;
             }
             
-            playerMoney -= grandTotal;
+            playerMoney -= transactionTotal;
             pinLed.textContent = "APPROVED";
             screenStatus.textContent = "PAID";
-            logText.textContent = `▶️ Payment processed successfully. Long-weekend shopping complete!`;
+            logText.textContent = `▶️ Payment processed! You successfully purchased ${customerBasket.length} Walmart items for the long weekend!`;
             progressStage = "done";
             
             window.confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
-            itemsInCart = 0;
+            customerBasket = [];
+            transactionTotal = 0;
             updateUI();
         }
     }
@@ -177,7 +194,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function updateCustomerView() {
         queueLane.innerHTML = `
-            <div class="queue-token" style="background:#6366f1">🎒 Basket Inventory: <strong id="basket-count" style="margin-left:5px">0</strong></div>
+            <div class="queue-token" style="background:#6366f1">🎒 Items in Cart: <strong id="basket-count" style="margin-left:5px">0</strong></div>
         `;
     }
 
@@ -186,7 +203,7 @@ document.addEventListener("DOMContentLoaded", () => {
         stockVal.textContent = `${storeStock}/${maxStock}`;
         if (currentRole === 'customer') {
             const basketCount = document.getElementById('basket-count');
-            if (basketCount) basketCount.textContent = itemsInCart;
+            if (basketCount) basketCount.textContent = customerBasket.length;
         }
     }
 
